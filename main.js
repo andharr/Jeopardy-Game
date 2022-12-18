@@ -48,6 +48,10 @@ let catArray = []
 
 function buildCategories() {
 
+	if (!(document.querySelector('.categoryRow').firstChild.innerText == '')) {
+		resetBoard()
+	}
+
   const fetchReq1 = fetch(
     `https://jservice.io/api/category?&id=${randInt()}`
   ).then((res) => res.json());
@@ -81,6 +85,22 @@ function buildCategories() {
     })
 }
 
+// Reset board and score
+
+function resetBoard(){
+	let clueParent = document.querySelector('.clueBoard')
+	while (clueParent.firstChild) {
+		clueParent.removeChild(clueParent.firstChild)
+	}
+	let catParent = document.querySelector('.categoryRow')
+	while (catParent.firstChild) {
+		catParent.removeChild(catParent.firstChild)
+	}
+	document.getElementById('score').innerText = 0
+	initBoard()
+	initCatRow()
+}
+
 
 //Load categories to the top category row
 
@@ -109,7 +129,44 @@ function getClue(event) {
 }
 
 
+//Show question to user, get their answer
 
+function showQuestion(clue, target, boxValue) {
+	let userAnswer = prompt(clue.question).toLowerCase()
+	let correctAnswer = clue.answer.toLowerCase().replace(/<\/?[^>]+(>|$)/g, "")
+	let possiblePoints = +(boxValue)
+	target.innerHTML = clue.answer
+	target.removeEventListener('click', getClue, false)
+	evaluateAnswer(userAnswer, correctAnswer, possiblePoints)
+}
+
+//Check user answer
+
+function evaluateAnswer(userAnswer, correctAnswer, possiblePoints) {
+	let checkAnswer = (userAnswer == correctAnswer) ? 'correct' : 'incorrect'
+	let confirmAnswer = ''
+	console.log(checkAnswer)
+	if (checkAnswer == 'incorrect') {
+	confirmAnswer = 
+	confirm(`You answered ${userAnswer} and the correct answer was ${correctAnswer}. Press OK to accept your answer and get points (no one is looking) or Cancel to not cheat.`)
+	}
+	awardPoints(checkAnswer, confirmAnswer, possiblePoints)
+}
+
+//Award points
+function awardPoints(checkAnswer, confirmAnswer, possiblePoints) {
+	if ((checkAnswer == 'incorrect' && confirmAnswer == true)) {
+		let target = document.getElementById('score')
+		let currentScore = +(target.innerText)
+		currentScore += possiblePoints
+		target.innerHTML = currentScore
+	} else {
+		alert('No points for you!')
+	}
+}
+
+
+//////////////////
 
 //Function to test for broken API category ID links. Needs promise or async approach?
 
